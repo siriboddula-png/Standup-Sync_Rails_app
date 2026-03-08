@@ -1,0 +1,53 @@
+<div class="card shadow border-0">
+  <div class="card-header bg-dark text-white py-3">
+    <h2 class="fw-bold mb-0 h4"><%= standup.persisted? ? "Edit" : "New" %> Standup Update</h2>
+  </div>
+
+  <%= form_with(model: standup, url: standup.persisted? ? standup_path(standup) : standups_path) do |f| %>         
+    <div class="card-body p-4">
+      <% if standup.errors.any? %>
+        <div class="alert alert-danger border-0 shadow-sm mb-4">
+          <h6 class="fw-bold mb-2">Please fix the following:</h6>
+          <ul class="mb-0 small">
+            <% standup.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="mb-4">
+        <%= f.label :standup_date, class: "form-label fw-bold" do %>
+          Date <span class="fw-light text-muted ms-1">Pick today or a past date to backfill progress</span>
+        <% end %>
+        <%= f.date_field :standup_date, class: "form-control", required: true %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :done, class: "form-label fw-bold" do %>
+          1. Accomplished Yesterday <span class="fw-light text-muted ms-1">(Minimum 15 characters)</span>
+        <% end %>
+        <%= f.text_area :done, class: "form-control", rows: 3 %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :doing, class: "form-label fw-bold" do %>
+          2. Focusing on Today <span class="fw-light text-muted ms-1">(Minimum 15 characters)</span>
+        <% end %>
+        <%= f.text_area :doing, class: "form-control", rows: 3 %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :blockers, class: "form-label fw-bold" do %>
+          3. Any Blockers? <span class="fw-light text-muted ms-1">(Maximum 200 characters)</span>
+        <% end %>
+        <%= f.text_area :blockers, class: "form-control", rows: 3 %>
+      </div>
+    </div>
+
+    <div class="card-footer bg-light p-3 d-flex gap-2">
+      <%= f.submit "Save Update", class: "btn btn-dark px-4" %>
+      <%= link_to "Cancel", standups_path, class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+</div>

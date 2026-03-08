@@ -1,0 +1,14 @@
+<tr>
+  <td class="text-nowrap text-secondary"><%= standup.standup_date%></td>
+  <td class="ps-4 fw-bold"><%= standup.name %></td>
+  <td><%= standup.done %></td>
+  <td><%= standup.doing %></td>
+  <td><%= highlight_blocker(standup.blockers) %></td>
+  <td class="pe-4 text-end">
+    <div class="btn-group btn-group-sm" role="group">
+      <%= link_to "Edit", edit_standup_path(standup), class: "btn btn-outline-primary" %>
+      <%= link_to "Delete", standup_path(standup), class: "btn btn-outline-danger",
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this update?" } %>
+    </div>
+  </td>
+</tr>

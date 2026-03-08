@@ -1,0 +1,11 @@
+SELECT 
+    u.username, 
+    u.first_name, 
+    u.last_name, 
+    s.standup_date, 
+    s.done, 
+    s.doing, 
+    s.blockers
+FROM standups s
+JOIN users u ON s.user_id = u.id
+ORDER BY s.standup_date DESC;

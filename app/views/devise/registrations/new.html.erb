@@ -1,0 +1,59 @@
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="card shadow border-0">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <h2 class="fw-bold">Create Account</h2>
+          <p class="text-muted small">Join the team and start syncing updates</p>
+        </div>
+
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :first_name, class: "form-label" %>
+              <%= f.text_field :first_name, autofocus: true, class: "form-control", placeholder: "First name"%>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= f.label :last_name, class: "form-label" %>
+              <%= f.text_field :last_name, class: "form-control", placeholder: "Last Name" %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :username, class: "form-label" %>
+            <%= f.text_field :username, class: "form-control", placeholder: "Choose a unique username" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, class: "form-label fw-bold small" %>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "name@company.com" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, class: "form-label fw-bold small" %>
+            <% if @minimum_password_length %>
+              <span class="text-muted" style="font-size: 0.7rem;">(<%= @minimum_password_length %> characters min)</span>
+            <% end %>
+            <%= f.password_field :password, autocomplete: "new-password", class: "form-control", placeholder: "Choose a strong password" %>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :password_confirmation, class: "form-label fw-bold small" %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control", placeholder: "Retype the password" %>
+          </div>
+
+          <div class="d-grid mb-3">
+            <%= f.submit "Sign up", class: "btn btn-primary fw-bold py-2" %>
+          </div>
+        <% end %>
+
+        <div class="text-center mt-3">
+          <hr class="opacity-10">
+          <%= render "devise/shared/links" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

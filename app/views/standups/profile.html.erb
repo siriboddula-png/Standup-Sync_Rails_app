@@ -1,0 +1,48 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <%= link_to "← Back to Team View", root_path, class: "text-muted text-decoration-none d-block mb-2" %>
+      <h1 class="display-5 fw-bold mb-0">My Logs</h1>
+      <p class="text-muted mb-0">Viewing all updates for <strong><%= current_user.email %></strong></p>
+    </div>
+    <div>
+      <%= link_to "Post My Update", new_standup_path, class: "btn btn-primary px-3 shadow-sm" %>
+    </div>
+  </div>
+
+  <div class="list-group shadow-sm">
+    <% @my_standups.each do |s| %>
+      <div class="list-group-item p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="fw-bold mb-0"><%= s.standup_date.strftime("%B %d, %Y") %></h5>
+          <div class="btn-group btn-group-sm">
+            <%= link_to "Edit", edit_standup_path(s), class: "btn btn-outline-primary" %>
+            <%= link_to "Delete", standup_path(s), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-outline-danger" %>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <small class="text-uppercase fw-bold text-muted small">Done</small>
+            <p><%= s.done %></p>
+          </div>
+          <div class="col-md-6">
+            <small class="text-uppercase fw-bold text-muted small">Doing</small>
+            <p><%= s.doing %></p>
+          </div>
+        </div>
+        <% if s.blockers.present? %>
+          <div class="mt-2 p-2 bg-danger-subtle rounded border border-danger-subtle">
+            <small class="fw-bold text-danger">BLOCKER:</small> <%= s.blockers %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @my_standups.empty? %>
+    <div class="text-center py-5 bg-light rounded border border-dashed">
+      <p class="text-muted">You haven't posted any updates yet.</p>
+      <%= link_to "Post your first update", new_standup_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>

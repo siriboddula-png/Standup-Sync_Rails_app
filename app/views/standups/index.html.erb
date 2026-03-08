@@ -1,0 +1,127 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-start mb-2">
+    <div>
+      <h6 class="text-muted text-uppercase fw-bold small mb-1">
+        Standup Sync — <%= Date.today.strftime("%B %d, %Y") %>
+      </h6>
+      <h1 class="display-5 fw-bold text-dark mb-2">Team Updates</h1>
+      
+      <div class="d-flex align-items-center gap-2">
+        <% if @recent_blockers > 0 %>
+          <span class="badge rounded-pill text-bg-danger px-3 py-2 shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <%= @recent_blockers %> Active Blockers (Last 7 Days)
+          </span>
+        <% else %>
+          <span class="badge rounded-pill text-bg-success px-3 py-2 shadow-sm">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            All Clear (No Recent Blockers)
+          </span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      <%= link_to "My Profile", profile_path, class: "btn btn-outline-dark px-3 shadow-sm" %>
+      <%= link_to "Post My Update", new_standup_path, class: "btn btn-primary px-3 shadow-sm" %>
+      <%= button_to "Logout", destroy_user_session_path, method: :delete, data: { turbo: false }, class: "btn btn-link text-danger text-decoration-none small" %>
+    </div>
+  </div>
+
+  <hr class="my-4 opacity-10">
+
+  <div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body py-2 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <%= form_with url: standups_path, method: :get, class: "d-flex gap-2" do |f| %>
+          <%= f.date_field :search_date, value: params[:search_date], class: "form-control form-control-sm", style: "width: 160px;" %>
+          <%= f.submit "Filter Date", class: "btn btn-sm btn-secondary" %>
+          <% if params[:search_date].present? %>
+            <%= link_to "Clear", root_path, class: "btn btn-sm btn-outline-secondary" %>
+          <% end %>
+        <% end %>
+
+        <%= form_with url: standups_path, method: :get, class: "d-flex gap-2" do |f| %>
+          <%= hidden_field_tag :sort, params[:sort] %>
+          <%= f.text_field :search_name, value: params[:search_name], placeholder: "Search name...", class: "form-control form-control-sm" %>
+          <%= f.submit "Filter", class: "btn btn-sm btn-secondary" %>
+          <% if params[:search_name].present? %>
+            <%= link_to "Clear", root_path, class: "btn btn-sm btn-outline-secondary" %>
+          <% end %>
+        <% end %>
+      </div>
+      
+      <% next_sort = (@current_sort == 'desc' ? 'asc' : 'desc') %>
+      <%= link_to standups_path(sort: next_sort), class: "btn btn-sm btn-outline-dark" do %>
+        Sort By Date <%= @current_sort == 'desc' ? '↓' : '↑' %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @grouped_standups.any? %>
+    <% @grouped_standups.each do |date, updates| %>
+      <div class="mb-5">
+        <div class="d-flex align-items-center mb-3">
+          <h4 class="tw-bold fs-5 mb-0 text-primary">
+            <%= date&.strftime("%A, %B %d, %Y") || "Unscheduled" %>
+          </h4>
+          <hr class="flex-grow-1 ms-1 opacity-10">
+        </div>
+
+        <div class="card shadow-sm border-0">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4" style="width: 180px;">Name</th>
+                  <th>Done</th>
+                  <th>Doing</th>
+                  <th style="width: 250px;">Blockers</th>
+                  <th class="text-center" style="width: 120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% updates.each do |s| %>
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <img src="<%= s.user.gravatar_url %>" class="rounded-circle border" width="30" height="30" alt="avatar">
+                        <span class="fw-bold"><%= s.user.first_name %> <%= s.user.last_name %></span>
+                      </div>
+                    </td>
+                    <td class="text-secondary small py-3"><%= s.done %></td>
+                    <td class="text-secondary small py-3"><%= s.doing %></td>
+                    <td>
+                      <% if s.blockers.present? && !["-", "none", "nil"].include?(s.blockers.downcase.strip) %>
+                        <div class="p-2 rounded bg-danger-subtle text-danger border border-danger-subtle small" style="word-break: break-word; max-width: 230px;">
+                          <strong>BLOCKER:</strong> <%= s.blockers %>
+                        </div>
+                      <% else %>
+                        <span class="text-muted small">-</span>
+                      <% end %>
+                    </td>
+                    <td class="text-center">
+                      <% if s.user == current_user %>
+                      <div class="btn-group btn-group-sm">
+                        <%= link_to "Edit", edit_standup_path(s), class: "btn btn-outline-primary" %>
+                        <%= link_to "Delete", standup_path(s), data: { turbo_method: :delete, turbo_confirm: "Delete this log?" }, class: "btn btn-outline-danger" %>
+                      </div>
+                      <% else %>
+                        <span class="text-muted small italic">Locked</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-5">
+      <div class="display-1 text-muted opacity-25 mb-3"><i class="bi bi-calendar-x"></i></div>
+      <p class="text-muted">No updates found for the selected criteria.</p>
+    </div>
+  <% end %>
+</div>

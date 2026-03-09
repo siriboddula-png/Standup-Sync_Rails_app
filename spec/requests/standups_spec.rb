@@ -14,6 +14,21 @@ RSpec.describe "Standups CRUD", type: :request do
 
   before { sign_in user }
 
+
+  describe "SEARCH" do
+    it "filters results by username" do
+      get standups_path, params: { query: 'u2' }
+    end
+
+    it "returns all entries when name is not entered" do
+      get standups_path
+    end
+
+    it "filters results by specific date" do
+      get standups_path, params: { search_date: Date.yesterday.to_s }
+    end
+  end
+
   describe "CREATE" do
     it "creates a standup and redirects" do
       expect {

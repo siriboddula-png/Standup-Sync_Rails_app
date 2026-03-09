@@ -24,6 +24,13 @@ RSpec.describe User, type: :model do
       expect(duplicate_user).not_to be_valid
     end
 
+    # Test: Unique user name
+    it "is invalid without a unique user name" do
+      User.create!(email: "test@example.com", password: "password123", username: "user1", first_name: "A", last_name: "B")
+      duplicate_user = User.new(email: "test@example.com", password: "password456", username: "user1", first_name: "C", last_name: "D")
+      expect(duplicate_user).not_to be_valid
+    end
+
     # Test: Minimum Password Length
     it "is invalid with a password shorter than 6 characters" do
       subject.password = "12345"

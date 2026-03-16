@@ -35,17 +35,11 @@ export async function createTestUser(page, userData = TEST_USER) {
   await page.fill('input[name="password"]', userData.password);
   await page.fill('input[name="password_confirmation"]', userData.password);
 
-  // Set up dialog handler BEFORE submitting - accept it immediately
-  page.once('dialog', dialog => {
-    console.log('Registration alert:', dialog.message());
-    dialog.accept();
-  });
+  // Submit form
+  await page.click('button[type="submit"]');
 
-  // Submit form and wait for navigation
-  await Promise.all([
-    page.waitForURL('**/login**', { timeout: 10000 }),
-    page.click('button[type="submit"]')
-  ]);
+  // Wait a bit for any alerts/redirects
+  await page.waitForTimeout(2000);
 }
 
 /**

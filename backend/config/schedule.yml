@@ -1,0 +1,7 @@
+daily_blocker_email:
+  cron: '20 12 * * *'
+  class: 'DailyBlockerJob'
+  queue: default
+  active_job: true
+  description: 'Send daily blocker summary email to manager'
+

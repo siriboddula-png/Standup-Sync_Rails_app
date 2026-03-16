@@ -1,0 +1,38 @@
+DAILY STANDUP SUMMARY
+<%= @date.strftime('%A, %B %d, %Y') %>
+=====================================
+
+SUMMARY
+-------
+<%= @total_blockers %> <%= @total_blockers == 1 ? 'blocker was' : 'blockers were' %> reported today.
+
+<% if @blockers_data.empty? %>
+GREAT NEWS!
+No blockers were reported today. The team is running smoothly!
+
+<% else %>
+BLOCKERS REPORTED
+-----------------
+
+<% @blockers_data.each_with_index do |blocker, index| %>
+<%= index + 1 %>. <%= blocker[:user_name] %> (<%= blocker[:user_email] %>)
+   
+   BLOCKER:
+   <%= blocker[:blocker_text] %>
+   
+   COMPLETED TASKS:
+   <%= blocker[:done] %>
+   
+   IN PROGRESS:
+   <%= blocker[:doing] %>
+   
+   ---
+   
+<% end %>
+<% end %>
+
+=====================================
+This is an automated daily summary from StandupSync.
+Generated at <%= Time.current.strftime('%I:%M %p %Z') %>
+
+View Dashboard: http://localhost:5173

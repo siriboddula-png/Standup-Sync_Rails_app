@@ -1,0 +1,15 @@
+---
+:concurrency: 5
+:timeout: 25
+:verbose: true
+:queues:
+  - default
+  - mailers
+
+:schedule:
+  daily_blocker_email:
+    cron: '20 12 * * *'  # Every day at 12:28 PM (12:28)
+    class: 'DailyBlockerJob'
+    queue: default
+    active_job: true
+    description: 'Send daily blocker summary email to manager'

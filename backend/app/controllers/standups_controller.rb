@@ -5,16 +5,14 @@ class StandupsController < ApplicationController
 
   def index
     @current_sort = params[:sort] == "asc" ? "asc" : "desc"
-    @standups = Standup.joins(:user).includes(:user)
-    search_term = params[:query] || params[:search_name]
-    if search_term.present?
-      @standups = @standups.where(
-        "users.username ILIKE :q OR users.first_name ILIKE :q OR users.last_name ILIKE :q", q: "%#{search_term}%")
-    end
-    if params[:search_date].present?
-      @standups = @standups.where(standup_date: params[:search_date])
-    end
-    @standups = @standups.order(standup_date: @current_sort)
+
+    search_params = {
+      search_name: params[:query] || params[:search_name],
+      search_date: params[:search_date],
+      sort: @current_sort
+    }
+    @standups = StandupSearchService.new(search_params).call
+
     @grouped_standups = @standups.group_by(&:standup_date)
     @recent_blockers = Standup.where(standup_date: 7.days.ago..Date.today).where.not(blockers: [ nil, "", "nil", "-", "none", "None" ]).count
   end

@@ -1,0 +1,34 @@
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.standup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.standup-form textarea {
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.standup-card {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+  text-align: left;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}

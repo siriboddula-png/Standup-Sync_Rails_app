@@ -16,6 +16,16 @@ module StandupSync
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Grape API configuration - exclude from Zeitwerk autoloading
+    config.autoload_paths << Rails.root.join("app", "api")
+    config.eager_load_paths << Rails.root.join("app", "api")
+
+    # Tell Zeitwerk to ignore the API directory
+    Rails.autoloaders.main.ignore(Rails.root.join("app", "api"))
+
+    # Configure ActiveJob to use Sidekiq
+    config.active_job.queue_adapter = :sidekiq
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

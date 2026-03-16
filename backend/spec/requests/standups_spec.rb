@@ -18,14 +18,17 @@ RSpec.describe "Standups CRUD", type: :request do
   describe "SEARCH" do
     it "filters results by username" do
       get standups_path, params: { query: 'u2' }
+      expect(response).to have_http_status(:ok)
     end
 
     it "returns all entries when name is not entered" do
       get standups_path
+      expect(response).to have_http_status(:ok)
     end
 
     it "filters results by specific date" do
       get standups_path, params: { search_date: Date.yesterday.to_s }
+      expect(response).to have_http_status(:ok)
     end
   end
 

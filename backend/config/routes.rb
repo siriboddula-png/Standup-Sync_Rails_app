@@ -1,5 +1,11 @@
+require "sidekiq/web"
+require "sidekiq/cron/web"
+
 Rails.application.routes.draw do
-  devise_for :users
+  mount Sidekiq::Web => "/sidekiq"
+
+  mount BaseApi => "/api"
+  devise_for :users, skip: [ :registrations ]
   authenticated :user do
     root to: "standups#index", as: :authenticated_root
   end

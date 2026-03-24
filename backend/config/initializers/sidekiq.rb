@@ -13,20 +13,23 @@ Sidekiq.configure_server do |config|
 
       if schedule
         Sidekiq::Cron::Job.load_from_hash(schedule)
-        puts "✅ Loaded Sidekiq-Cron schedule from schedule.yml"
+        puts " Loaded Sidekiq-Cron schedule from #{schedule_file}"
+        puts " Total jobs loaded: #{Sidekiq::Cron::Job.all.count}"
 
         # Log each job's details
         Sidekiq::Cron::Job.all.each do |job|
-          puts "  📅 Job: #{job.name}"
-          puts "     Cron: #{job.cron}"
-          puts "     Class: #{job.klass}"
-          puts "     Status: #{job.status}"
+          puts ""
+          puts "      Job Name: #{job.name}"
+          puts "      Cron Expression: #{job.cron}"
+          puts "      Job Class: #{job.class}"
+          puts "      Enabled: #{job.enabled?}"
         end
+        puts ""
       else
-        puts "⚠️  schedule.yml is empty"
+        puts " schedule.yml is empty"
       end
     else
-      puts "⚠️  schedule.yml not found at #{schedule_file}"
+      puts " schedule.yml not found at #{schedule_file}"
     end
   end
 end

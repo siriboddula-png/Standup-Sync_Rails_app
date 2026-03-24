@@ -15,10 +15,13 @@ export const useStandups = () => {
 
   const fetchStandups = useCallback(async () => {
     try {
+      console.log(`[useStandups] fetchStandups called with query:`, activeQuery);
       const res = await API.get('/v1/standups', { params: activeQuery });
+      console.log(`[useStandups] fetchStandups received ${res.data.length} standups`);
       setStandups(res.data);
+      console.log(`[useStandups] setStandups called with ${res.data.length} items`);
     } catch (err) {
-      console.error("Fetch failed", err);
+      console.error("[useStandups] Fetch failed", err);
     }
   }, [activeQuery]);
 
@@ -48,14 +51,18 @@ export const useStandups = () => {
     await fetchStandups();
   };
 
-  const updateStandup = async (id, formData) => {
-    await API.put(`/v1/standups/${id}`, formData);
+  const updateStandup = async (id, formData, userId) => {
+    await API.put(`/v1/standups/${id}`, { ...formData, user_id: userId });
     await fetchStandups();
   };
 
-  const deleteStandup = async (id) => {
-    await API.delete(`/v1/standups/${id}`);
+  const deleteStandup = async (id, userId) => {
+    console.log(`[useStandups] Deleting standup ${id} for user ${userId}`);
+    const response = await API.delete(`/v1/standups/${id}?user_id=${userId}`);
+    console.log(`[useStandups] Delete response:`, response.status, response.data);
+    console.log(`[useStandups] Calling fetchStandups after delete...`);
     await fetchStandups();
+    console.log(`[useStandups] fetchStandups completed, new standups count:`, standups.length);
   };
 
   return {

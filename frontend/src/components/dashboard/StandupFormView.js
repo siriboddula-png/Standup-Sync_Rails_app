@@ -22,28 +22,38 @@ const StandupFormView = ({ formData, setFormData, onSubmit, onCancel, isEditing 
 
         <div className="mb-6">
           <label className="block font-bold mb-2">
-            1. Accomplished tasks <span className="font-normal text-gray-600 ml-1">(Min 15 chars)</span>
+            1. Accomplished tasks <span className="font-normal text-gray-600 ml-1">(Min 15 chars and max. 30 chars)</span>
           </label>
           <textarea
             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows="3"
+            minLength={15}
+            maxLength={30}
             value={formData.done}
             onChange={e => setFormData({...formData, done: e.target.value})}
             required
           />
+          <div className="text-xs text-gray-500 mt-1">
+            {formData.done.length} / 30 characters
+          </div>
         </div>
 
         <div className="mb-6">
           <label className="block font-bold mb-2">
-            2. Tasks in progress <span className="font-normal text-gray-600 ml-1">(Min 15 chars)</span>
+            2. Tasks in progress <span className="font-normal text-gray-600 ml-1">(Min 15 chars and max 30 chars)</span>
           </label>
           <textarea
             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows="3"
+            minLength={15}
+            maxLength={30}
             value={formData.doing}
             onChange={e => setFormData({...formData, doing: e.target.value})}
             required
           />
+          <div className="text-xs text-gray-500 mt-1">
+            {formData.doing.length} / 30 characters
+          </div>
         </div>
 
         <div className="mb-6">
@@ -53,9 +63,13 @@ const StandupFormView = ({ formData, setFormData, onSubmit, onCancel, isEditing 
           <textarea
             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows="3"
+            maxLength={200}
             value={formData.blockers}
             onChange={e => setFormData({...formData, blockers: e.target.value})}
           />
+          <div className="text-xs text-gray-500 mt-1">
+            {formData.blockers.length} / 200 characters
+          </div>
         </div>
 
         <div className="bg-gray-50 p-4 rounded-b-lg flex gap-2 -mx-6 -mb-6 mt-6">

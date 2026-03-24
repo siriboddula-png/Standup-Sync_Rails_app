@@ -6,7 +6,7 @@ const TEST_USER = {
   password: 'password123',
   username: `siri09`,
   firstName: 'siri',
-  lastName: 'test_test'
+  lastName: 'test'
 };
 
 test.describe('Authentication Flows', () => {
@@ -45,10 +45,12 @@ test.describe('Authentication Flows', () => {
   });
   
   test('should successfully logout', async ({ page }) => {
+    await page.goto('/login');
     await login(page, TEST_USER);
-    await expect(page).toHaveURL(/.*dashboard/);
-    await logout(page);
-    await expect(page).toHaveURL(/.*login/);
+    await page.waitForTimeout(1000);
+    await expect(page.locator('button:has-text("Logout")')).toBeVisible();
+    await page.click('button:has-text("Logout")');
+    await page.waitForURL('**/login');
   });
 
   test('should reject password shorter than 6 characters', async ({ page }) => {

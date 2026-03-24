@@ -57,11 +57,9 @@ class UsersApi < Grape::API
       user = User.find_by(email: params[:user][:email])
 
       if user
-        # This is a Devise method that sends the email
         user.send_reset_password_instructions
         { status: "success", message: "Instructions sent" }
       else
-        # Following the UI's error handling for non-existent emails
         error!({ errors: [ "Email address not found" ] }, 404)
       end
     end

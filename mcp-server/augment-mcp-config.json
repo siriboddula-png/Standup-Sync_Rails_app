@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "standup-sync": {
+      "url": "http://localhost:3001",
+      "name": "Standup Sync MCP Server",
+      "description": "MCP server for managing Standup Sync standups",
+      "endpoints": {
+        "list": "http://localhost:3001/mcp/tools/list",
+        "call": "http://localhost:3001/mcp/tools/call"
+      }
+    }
+  }
+}
+

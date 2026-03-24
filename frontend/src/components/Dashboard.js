@@ -46,7 +46,7 @@ const Dashboard = ({ user, onLogout }) => {
 
     try {
       if (editingId) {
-        await updateStandup(editingId, formData);
+        await updateStandup(editingId, formData, user.id);
         setEditingId(null);
         showNotification("Standup edited successfully!", "success");
       } else {
@@ -57,7 +57,6 @@ const Dashboard = ({ user, onLogout }) => {
       navigate('/dashboard');
     } catch (err) {
       console.error("Save error:", err);
-
       if (err.response?.data?.errors) {
         const apiErrors = Array.isArray(err.response.data.errors)
         ? err.response.data.errors : [err.response.data.errors];
@@ -71,7 +70,7 @@ const Dashboard = ({ user, onLogout }) => {
   const handleDelete = async (id) => {
     if (window.confirm("Delete this log?")) {
       try {
-        await deleteStandup(id);
+        await deleteStandup(id, user.id);
         showNotification("Standup deleted successfully!","success");
       } catch (err) {
         showNotification("Delete failed.","error");
@@ -104,16 +103,7 @@ const Dashboard = ({ user, onLogout }) => {
     if (selectedDate > today) {
       errors.push('Standup date cannot be in the future. Please select today or a previous date.');
     }
-    if (!formData.done || formData.done.trim().length === 0) {
-      errors.push('Accomplished tasks cannot be empty.');
-    } else if (formData.done.trim().length < 15) {
-      errors.push(`Accomplished tasks must be at least 15 characters long (currently ${formData.done.trim().length} characters).`);
-    }
-    if (!formData.doing || formData.doing.trim().length === 0) {
-      errors.push('Tasks in progress cannot be empty.');
-    } else if (formData.doing.trim().length < 15) {
-      errors.push(`Tasks in progress must be at least 15 characters long (currently ${formData.doing.trim().length} characters).`);
-    }
+
     if (formData.blockers && formData.blockers.trim().length > 200) {
       errors.push(`Blockers must be 200 characters or less (currently ${formData.blockers.trim().length} characters).`);
     }

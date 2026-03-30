@@ -83,7 +83,6 @@ test.describe('Standup CRUD Operations', () => {
   });
 
   test('should delete standup directly by auto-accepting dialog', async ({ page }) => {
-    // 1. Create the entry
     await page.click('text=Post My Update');
     const uniqueText = `Delete Me ${Date.now()}`;
     await page.locator('textarea').nth(0).fill(uniqueText);

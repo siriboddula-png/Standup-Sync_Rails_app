@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axiosConfig';
-import Notification from "./Notification"
+import Notification from "./Notification";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();

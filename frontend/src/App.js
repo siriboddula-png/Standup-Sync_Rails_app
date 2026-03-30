@@ -5,6 +5,7 @@ import API from './api/axiosConfig';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import Dashboard from './components/Dashboard';
+import Chatbot from './components/chatbot.js';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -46,6 +47,8 @@ function App() {
           </>
         )}
       </Routes>
+      {/* Only show chatbot when user is logged in */}
+      {token && user && <Chatbot user={user} />}
     </BrowserRouter>
   );
 }

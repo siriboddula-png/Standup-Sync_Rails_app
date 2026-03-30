@@ -1,7 +1,0 @@
-daily_blocker_email:
-  cron: '40 11 * * *' # 11:35 AM for testing
-  timezone: "Asia/Kolkata"
-  class: 'DailyBlockerJob'
-  queue: default
-  active_job: true
-  description: 'Send daily blocker summary email to manager'

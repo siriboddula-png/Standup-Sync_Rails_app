@@ -1,6 +1,14 @@
 #!/usr/bin/env ruby
 
-require_relative "../config/environment"
-require "solid_queue/cli"
+# This app uses GoodJob instead of Solid Queue for background jobs
+# GoodJob runs automatically with the Rails server, no separate process needed
+# To view jobs: http://localhost:3000/good_job
+# To run jobs manually: rails runner "DailyBlockerJob.perform_now"
 
-SolidQueue::Cli.start(ARGV)
+puts "⚠️  This app uses GoodJob, not Solid Queue."
+puts "✅ GoodJob runs automatically with 'rails server'"
+puts "📊 View job dashboard at: http://localhost:3000/good_job"
+puts ""
+puts "To test the daily email job:"
+puts "  rails test:mailer"
+puts ""

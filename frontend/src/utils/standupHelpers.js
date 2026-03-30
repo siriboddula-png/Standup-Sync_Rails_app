@@ -28,12 +28,16 @@ export const hasBlocker = (blockers) => {
 };
 
 export const groupByDate = (standups) => {
-  return standups.reduce((groups, standup) => {
+  const grouped = standups.reduce((groups, standup) => {
     const date = standup.standup_date || 'Unscheduled';
     if (!groups[date]) groups[date] = [];
     groups[date].push(standup);
     return groups;
   }, {});
+  Object.keys(grouped).forEach(date => {
+    grouped[date].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  });
+  return grouped;
 };
 
 export const countRecentBlockers = (standups) => {

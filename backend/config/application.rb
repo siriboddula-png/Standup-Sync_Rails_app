@@ -23,15 +23,15 @@ module StandupSync
     # Tell Zeitwerk to ignore the API directory
     Rails.autoloaders.main.ignore(Rails.root.join("app", "api"))
 
-    # Configure ActiveJob to use Sidekiq
-    config.active_job.queue_adapter = :sidekiq
+    # Configure ActiveJob to use GoodJob
+    config.active_job.queue_adapter = :good_job
 
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "Asia/Kolkata"
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

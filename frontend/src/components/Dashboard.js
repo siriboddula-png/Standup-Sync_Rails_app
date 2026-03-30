@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { useStandups } from '../hooks/useStandups';
 import { getTodayDate } from '../utils/standupHelpers';
@@ -32,8 +32,38 @@ const Dashboard = ({ user, onLogout }) => {
     toggleSort,
     createStandup,
     updateStandup,
-    deleteStandup
+    deleteStandup,
+    refetch
   } = useStandups();
+
+  const refetchRef = useRef(refetch);
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
+
+  useEffect(() => {
+    console.log('Dashboard: Setting up standupChanged event listener');
+
+    const handleStandupChanged = (event) => {
+      console.log('Dashboard received standupChanged event:', event.detail);
+      console.log('Dashboard: Calling refetch()...');
+
+      if (refetchRef.current) {
+        refetchRef.current();
+        console.log('Dashboard: refetch() called');
+      } else {
+        console.error('Dashboard: refetch is undefined!');
+      }
+    };
+
+    window.addEventListener('standupChanged', handleStandupChanged);
+    console.log('Dashboard: Event listener registered');
+
+    return () => {
+      console.log('Dashboard: Cleaning up event listener');
+      window.removeEventListener('standupChanged', handleStandupChanged);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

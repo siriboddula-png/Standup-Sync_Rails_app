@@ -1,14 +1,9 @@
 {
   "mcpServers": {
     "standup-sync": {
-      "url": "http://localhost:3001",
+      "url": "http://localhost:3001/sse",
       "name": "Standup Sync MCP Server",
-      "description": "MCP server for managing Standup Sync standups",
-      "endpoints": {
-        "list": "http://localhost:3001/mcp/tools/list",
-        "call": "http://localhost:3001/mcp/tools/call"
-      }
+      "description": "Use this MCP SSE server for Standup Sync operations. Do not use Rails console, Ruby scripts, ActiveRecord models, or direct database access for standup/user queries; this server calls the Rails API via RAILS_API_URL."
     }
   }
 }
-

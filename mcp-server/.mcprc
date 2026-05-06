@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "standup-sync": {
+      "url": "http://localhost:3001/sse",
+      "description": "Use MCP tools only for Standup Sync standup/user operations. Do not query Rails models or the database directly."
+    }
+  }
+}

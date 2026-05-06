@@ -4,18 +4,22 @@ A comprehensive daily standup management system with AI-powered chatbot integrat
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [API Documentation](#api-documentation)
-- [Troubleshooting](#troubleshooting)
+- [Overview](#-overview)
+- [Architecture](#️-architecture)
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation & Setup](#-installation--setup)
+- [Configuration](#️-configuration)
+- [Running the Application](#-running-the-application)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [API Documentation](#-api-documentation)
+- [Troubleshooting](#-troubleshooting)
+- [Additional Documentation](#-additional-documentation)
+- [Quick Start Guide](#-quick-start-guide)
+- [Key Features in Detail](#-key-features-in-detail)
+- [Security Notes](#-security-notes)
 
 ---
 

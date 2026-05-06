@@ -1,6 +1,17 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
+function isCurrentUserStandup(standup, session) {
+  return Number(standup.user_id) === Number(session.user_id);
+}
+
+function ensureCurrentUserStandup(standup, session, action) {
+  if (!isCurrentUserStandup(standup, session)) {
+    const userName = standup.user ? `${standup.user.first_name} ${standup.user.last_name}` : 'another user';
+    throw new Error(`Access denied: You can only ${action} your own standups. This standup belongs to ${userName}.`);
+  }
+}
+
 const tools = [
   {
     name: 'login',
@@ -40,10 +51,11 @@ const tools = [
         });
 
         const user = response.data.user || response.data;
+        const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
         const session_id = crypto.randomBytes(16).toString('hex');
 
         return {
-          message: `Login successful! Welcome back, ${user.first_name} ${user.last_name}! You are now logged in as ${user.email}`,
+          message: `Login successful! Welcome back, ${displayName}! You are now logged in as ${user.email}`,
           data: {
             user_id: user.id,
             email: user.email,
@@ -228,7 +240,7 @@ const tools = [
 
   {
     name: 'search_standups',
-    description: 'Search and filter standups (requires login). Can view all users\' standups or filter by specific user.',
+    description: 'Search and filter standups for the logged-in user. Team-wide viewing is read-only and must be explicitly requested.',
     requiresAuth: true,
     inputSchema: {
       type: 'object',
@@ -247,7 +259,7 @@ const tools = [
         },
         user_id: {
           type: 'number',
-          description: 'Filter standups by specific user ID (optional - if not provided, shows all users\' standups)'
+          description: 'Filter by a specific user ID. Defaults to the logged-in user unless include_team_standups is true.'
         },
         search_name: {
           type: 'string',
@@ -255,7 +267,11 @@ const tools = [
         },
         my_standups_only: {
           type: 'boolean',
-          description: 'If true, only show standups for the logged-in user (default: false)'
+          description: 'If true, only show standups for the logged-in user (default: true)'
+        },
+        include_team_standups: {
+          type: 'boolean',
+          description: 'If true, include team standups in read-only search results (default: false)'
         }
       },
       required: []
@@ -263,7 +279,9 @@ const tools = [
     execute: async (args, railsApiUrl, session) => {
       const params = new URLSearchParams();
       params.append('authenticated_user_id', session.user_id);
-      if (args.my_standups_only === true) {
+
+      const includeTeamStandups = args.include_team_standups === true && args.my_standups_only !== true;
+      if (!includeTeamStandups) {
         params.append('user_id', session.user_id);
       } else if (args.user_id) {
         params.append('user_id', args.user_id);
@@ -288,7 +306,7 @@ const tools = [
         let message = `Found ${standups.length} standup(s):\n`;
         standups.forEach((standup, index) => {
           const userName = standup.user ? `${standup.user.first_name} ${standup.user.last_name} (${standup.user.email})` : standup.name;
-          const isOwnStandup = standup.user_id === session.user_id ? ' [YOUR STANDUP]' : ' [READ-ONLY]';
+          const isOwnStandup = isCurrentUserStandup(standup, session) ? ' [YOUR STANDUP]' : ' [READ-ONLY]';
           message += `\n${index + 1}. ${standup.standup_date} (ID: ${standup.id})${isOwnStandup}\n`;
           message += `   User: ${userName}\n`;
           message += `   Done: ${standup.done}\n`;
@@ -379,12 +397,10 @@ const tools = [
       }
 
       try {
-        const getResponse = await axios.get(`${railsApiUrl}/v1/standups/${args.standup_id}`);
+        const getResponse = await axios.get(`${railsApiUrl}/v1/standups/${args.standup_id}?user_id=${session.user_id}`);
         const standup = getResponse.data;
 
-        if (standup.user_id !== session.user_id) {
-          throw new Error(`Access denied: You can only update your own standups. This standup belongs to ${standup.user?.first_name || 'another user'}.`);
-        }
+        ensureCurrentUserStandup(standup, session, 'update');
       } catch (error) {
         if (error.message.includes('Access denied')) {
           throw error;
@@ -420,7 +436,7 @@ const tools = [
 
   {
     name: 'find_and_update_standup',
-    description: 'Find a standup by searching and update it (requires login). Searches across all users but you can only update your own standups.',
+    description: 'Find one of the logged-in user\'s standups by searching and update it (requires login).',
     requiresAuth: true,
     inputSchema: {
       type: 'object',
@@ -460,6 +476,7 @@ const tools = [
       try {
         const params = new URLSearchParams();
         params.append('authenticated_user_id', session.user_id);
+        params.append('user_id', session.user_id);
         params.append('q', args.search_text);
         if (args.date) params.append('search_date', args.date);
 
@@ -476,8 +493,7 @@ const tools = [
         if (standups.length > 1) {
           const standupList = standups.map((s, i) => {
             const userName = s.user ? `${s.user.first_name} ${s.user.last_name}` : s.name;
-            const isOwn = s.user_id === session.user_id ? '[YOUR STANDUP]' : '[READ-ONLY]';
-            return `${i + 1}. ID: ${s.id}, Date: ${s.standup_date} ${isOwn}\n   User: ${userName}\n   Done: ${s.done}\n   Doing: ${s.doing}\n   Blockers: ${s.blockers || 'None'}`;
+            return `${i + 1}. ID: ${s.id}, Date: ${s.standup_date} [YOUR STANDUP]\n   User: ${userName}\n   Done: ${s.done}\n   Doing: ${s.doing}\n   Blockers: ${s.blockers || 'None'}`;
           }).join('\n\n');
 
           return {
@@ -487,12 +503,7 @@ const tools = [
         }
 
         const standup = standups[0];
-
-        // Check ownership before updating
-        if (standup.user_id !== session.user_id) {
-          const userName = standup.user ? `${standup.user.first_name} ${standup.user.last_name}` : 'another user';
-          throw new Error(`Access denied: Found standup ID ${standup.id} but it belongs to ${userName}. You can only update your own standups.`);
-        }
+        ensureCurrentUserStandup(standup, session, 'update');
 
         const updateData = { user_id: session.user_id };
 
@@ -534,12 +545,10 @@ const tools = [
 
       // First, verify the standup belongs to the logged-in user
       try {
-        const getResponse = await axios.get(`${railsApiUrl}/v1/standups/${args.standup_id}`);
+        const getResponse = await axios.get(`${railsApiUrl}/v1/standups/${args.standup_id}?user_id=${session.user_id}`);
         const standup = getResponse.data;
 
-        if (standup.user_id !== session.user_id) {
-          throw new Error(`Access denied: You can only delete your own standups. This standup belongs to ${standup.user?.first_name || 'another user'}.`);
-        }
+        ensureCurrentUserStandup(standup, session, 'delete');
       } catch (error) {
         if (error.message.includes('Access denied')) {
           throw error;
@@ -568,4 +577,3 @@ const tools = [
 ];
 
 module.exports = tools;
-

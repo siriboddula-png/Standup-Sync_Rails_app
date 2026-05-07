@@ -2,6 +2,24 @@ const axios = require('axios');
 
 const RAILS_API_URL = process.env.RAILS_API_URL || 'http://localhost:3000/api';
 
+function normalizeDays(value) {
+  if (value === undefined || value === null || value === '') return null;
+
+  const days = Number(value);
+  return Number.isFinite(days) && days > 0 ? days : null;
+}
+
+function appendLookbackDateRange(params, days) {
+  const endDate = new Date().toISOString().split('T')[0];
+  const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  params.append('start_date', startDate);
+  params.append('end_date', endDate);
+}
+
+function dateRangeLabel(days) {
+  return days ? `in the last ${days} days` : 'across all dates';
+}
+
 const tools = [
   {
     name: 'search_standups',
@@ -11,8 +29,9 @@ const tools = [
       start_date: 'string (optional) - Start date in YYYY-MM-DD format',
       end_date: 'string (optional) - End date in YYYY-MM-DD format',
       search_query: 'string (optional) - Text to search in done, doing, or blockers fields',
-      days: 'number (optional) - Number of days to look back (default: 30)',
-      my_standups_only: 'boolean (optional) - If true, only show logged-in user\'s standups'
+      days: 'number (optional) - Number of days to look back. If omitted, no date filter is applied',
+      my_standups_only: 'boolean (optional) - If true, only show logged-in user\'s standups',
+      all_time: 'boolean (optional) - If true, do not apply a date filter'
     },
     execute: async (args, session) => {
       const params = new URLSearchParams();
@@ -26,15 +45,14 @@ const tools = [
       }
 
       // Date range
-      if (args.start_date && args.end_date) {
+      if (args.all_time === true) {
+        // Intentionally skip date filters.
+      } else if (args.start_date && args.end_date) {
         params.append('start_date', args.start_date);
         params.append('end_date', args.end_date);
       } else {
-        const days = args.days || 30;
-        const endDate = new Date().toISOString().split('T')[0];
-        const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        params.append('start_date', startDate);
-        params.append('end_date', endDate);
+        const days = normalizeDays(args.days);
+        if (days) appendLookbackDateRange(params, days);
       }
 
       // Search query
@@ -167,7 +185,7 @@ const tools = [
     parameters: {
       keywords: 'string (required) - Keywords to search for in standup content',
       user_name: 'string (optional) - Filter by specific user name',
-      days: 'number (optional) - Number of days to search back (default: 30)'
+      days: 'number (optional) - Number of days to search back. If omitted, no date filter is applied'
     },
     execute: async (args, session) => {
       if (!args.keywords) {
@@ -186,11 +204,8 @@ const tools = [
         params.append('search_name', args.user_name);
       }
 
-      const days = args.days || 30;
-      const endDate = new Date().toISOString().split('T')[0];
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
+      const days = normalizeDays(args.days);
+      if (days) appendLookbackDateRange(params, days);
 
       try {
         const url = `${RAILS_API_URL}/v1/standups?${params.toString()}`;
@@ -204,7 +219,7 @@ const tools = [
         if (standups.length === 0) {
           return {
             success: true,
-            message: `No standups found containing "${args.keywords}" in the last ${days} days.`,
+            message: `No standups found containing "${args.keywords}" ${dateRangeLabel(days)}.`,
             data: []
           };
         }
@@ -485,18 +500,18 @@ const tools = [
     name: 'get_my_standups',
     description: 'Get standups for the currently logged-in user in Standup Sync.',
     parameters: {
-      days: 'number (optional) - Number of days to look back (default: 7)'
+      days: 'number (optional) - Number of days to look back. If omitted, no date filter is applied',
+      all_time: 'boolean (optional) - If true, return all standups for the logged-in user without a date filter'
     },
     execute: async (args, session) => {
       const params = new URLSearchParams();
       params.append('authenticated_user_id', session.user_id);
       params.append('user_id', session.user_id);
 
-      const days = args.days || 7;
-      const endDate = new Date().toISOString().split('T')[0];
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
+      const allTime = args.all_time === true;
+      const days = allTime ? null : normalizeDays(args.days);
+
+      if (days) appendLookbackDateRange(params, days);
 
       try {
         const url = `${RAILS_API_URL}/v1/standups?${params.toString()}`;
@@ -508,14 +523,16 @@ const tools = [
         console.log(`Found ${standups.length} of your standups`);
 
         if (standups.length === 0) {
+          const rangeMessage = days ? `in the last ${days} days` : 'yet';
           return {
             success: true,
-            message: `You haven't created any standups in the last ${days} days.`,
+            message: `You haven't created any standups ${rangeMessage}.`,
             data: []
           };
         }
 
-        let message = `You have ${standups.length} standup(s) in the last ${days} days:\n\n`;
+        const rangeMessage = dateRangeLabel(days);
+        let message = `You have ${standups.length} standup(s) ${rangeMessage}:\n\n`;
         standups.forEach((standup, index) => {
           message += `${index + 1}. ${standup.standup_date} (ID: ${standup.id})\n`;
           message += `   Done: ${standup.done}\n`;
@@ -545,7 +562,7 @@ const tools = [
     description: 'Get statistics and insights for a specific user in Standup Sync.',
     parameters: {
       user_name: 'string (optional) - User name to get insights for. If not provided, shows insights for logged-in user',
-      days: 'number (optional) - Number of days to analyze (default: 30)'
+      days: 'number (optional) - Number of days to analyze. If omitted, no date filter is applied'
     },
     execute: async (args, session) => {
       const params = new URLSearchParams();
@@ -557,11 +574,8 @@ const tools = [
         params.append('user_id', session.user_id);
       }
 
-      const days = args.days || 30;
-      const endDate = new Date().toISOString().split('T')[0];
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
+      const days = normalizeDays(args.days);
+      if (days) appendLookbackDateRange(params, days);
 
       try {
         const url = `${RAILS_API_URL}/v1/standups?${params.toString()}`;
@@ -574,7 +588,7 @@ const tools = [
           const userName = args.user_name || 'You';
           return {
             success: true,
-            message: `${userName} have no standups in the last ${days} days.`,
+            message: `${userName} have no standups ${dateRangeLabel(days)}.`,
             data: { total: 0 }
           };
         }
@@ -594,7 +608,7 @@ const tools = [
         const avgDoneLength = Math.round(standups.reduce((sum, s) => sum + s.done.length, 0) / standups.length);
         const avgDoingLength = Math.round(standups.reduce((sum, s) => sum + s.doing.length, 0) / standups.length);
 
-        const message = `Insights for ${userName} (last ${days} days):\n\n` +
+        const message = `Insights for ${userName} (${dateRangeLabel(days)}):\n\n` +
           `Total Standups: ${standups.length}\n` +
           `Standups with Blockers: ${withBlockers.length}\n` +
           `Blocker Rate: ${Math.round((withBlockers.length / standups.length) * 100)}%\n` +
@@ -631,7 +645,7 @@ const tools = [
     description: 'Find all standups with blockers in Standup Sync.',
     parameters: {
       user_name: 'string (optional) - Filter blockers by user name',
-      days: 'number (optional) - Number of days to look back (default: 30)'
+      days: 'number (optional) - Number of days to look back. If omitted, no date filter is applied'
     },
     execute: async (args, session) => {
       const params = new URLSearchParams();
@@ -641,11 +655,8 @@ const tools = [
         params.append('search_name', args.user_name);
       }
 
-      const days = args.days || 30;
-      const endDate = new Date().toISOString().split('T')[0];
-      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
+      const days = normalizeDays(args.days);
+      if (days) appendLookbackDateRange(params, days);
 
       try {
         const url = `${RAILS_API_URL}/v1/standups?${params.toString()}`;
@@ -668,7 +679,7 @@ const tools = [
         if (withBlockers.length === 0) {
           return {
             success: true,
-            message: `No blockers found in the last ${days} days!`,
+            message: `No blockers found ${dateRangeLabel(days)}!`,
             data: []
           };
         }
@@ -951,4 +962,3 @@ const tools = [
 ];
 
 module.exports = tools;
-
